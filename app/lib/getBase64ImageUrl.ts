@@ -1,12 +1,5 @@
 import 'server-only';
 
-function encodeCloudinaryPublicId(publicId: string): string {
-  return publicId
-    .split('/')
-    .map((segment) => encodeURIComponent(segment))
-    .join('/');
-}
-
 type CacheEntry = {
   dataUrl: string;
   createdAt: number;
@@ -24,27 +17,25 @@ function getGlobalCache(): Map<string, CacheEntry> {
   return cache;
 }
 
-export async function getBase64ImageUrl(publicId: string): Promise<string> {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  if (!cloudName) {
-    throw new Error('NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME is not set');
+/**
+ * Fetch a remote image URL and return a tiny base64 data-URL
+ * suitable for use as a blur placeholder.
+ */
+export async function getBase64ImageUrl(imageUrl: string): Promise<string> {
+  if (!imageUrl) {
+    throw new Error('imageUrl is required');
   }
 
   const cache = getGlobalCache();
-  const cacheKey = `${cloudName}:${publicId}`;
-  const cached = cache.get(cacheKey);
+  const cached = cache.get(imageUrl);
   if (cached) return cached.dataUrl;
 
-  // Very small, very low quality, heavily blurred placeholder.
-  // This keeps payload tiny and renders instantly.
-  const transformedUrl = `https://res.cloudinary.com/${cloudName}/image/upload/w_32,q_10,e_blur:2000,f_jpg/${encodeCloudinaryPublicId(publicId)}`;
-
-  const response = await fetch(transformedUrl, {
+  const response = await fetch(imageUrl, {
     next: { revalidate: 60 * 60 * 24 * 365 },
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch placeholder for ${publicId} (${response.status})`);
+    throw new Error(`Failed to fetch placeholder for ${imageUrl} (${response.status})`);
   }
 
   const arrayBuffer = await response.arrayBuffer();
@@ -52,9 +43,8 @@ export async function getBase64ImageUrl(publicId: string): Promise<string> {
   const base64 = Buffer.from(arrayBuffer).toString('base64');
   const dataUrl = `data:${contentType};base64,${base64}`;
 
-  // Simple bound to avoid unbounded memory usage during dev.
   if (cache.size > 2000) cache.clear();
-  cache.set(cacheKey, { dataUrl, createdAt: Date.now() });
+  cache.set(imageUrl, { dataUrl, createdAt: Date.now() });
 
   return dataUrl;
 }

@@ -68,4 +68,4 @@ async function processDirectory(inputDir, outputDir) {
 console.log('Compressing images...\n');
 await processDirectory(photosDir, outputDir);
 console.log('\n✅ Done! Compressed images are in public/photos-compressed/');
-console.log('Upload this folder to Cloudinary, then delete it locally.');
+console.log('Upload this folder to Supabase Storage, then delete it locally.');

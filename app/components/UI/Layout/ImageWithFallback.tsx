@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { CldImage } from 'next-cloudinary'
+import Image from 'next/image'
 
 const ERROR_IMG_SRC =
   'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODgiIGhlaWdodD0iODgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBvcGFjaXR5PSIuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIzLjciPjxyZWN0IHg9IjE2IiB5PSIxNiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiByeD0iNiIvPjxwYXRoIGQ9Im0xNiA1OCAxNi0xOCAzMiAzMiIvPjxjaXJjbGUgY3g9IjUzIiBjeT0iMzUiIHI9IjciLz48L3N2Zz4KCg=='
@@ -11,7 +11,7 @@ const DEFAULT_BLUR_DATA_URL =
 const blurDataUrlCache = new Map<string, string>()
 
 interface ImageWithFallbackProps {
-  src: string;  // Cloudinary public ID
+  src: string;  // Supabase Storage public URL
   alt: string;
   className?: string;
   fill?: boolean;
@@ -24,8 +24,6 @@ interface ImageWithFallbackProps {
   fetchBlurPlaceholder?: boolean;
   unoptimized?: boolean;
   quality?: number | string;
-  format?: string;
-  dpr?: number | string;
   onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
 }
 
@@ -43,8 +41,6 @@ export function ImageWithFallback({
   fetchBlurPlaceholder = false,
   unoptimized = true,
   quality,
-  format,
-  dpr,
   onLoad,
   ...rest
 }: ImageWithFallbackProps) {
@@ -65,14 +61,10 @@ export function ImageWithFallback({
   }
 
   useEffect(() => {
-    // Fetching blur placeholders server-side is relatively expensive and can
-    // create a waterfall when rendering lots of images (e.g. galleries).
-    // Keep it opt-in; the default SVG placeholder is instant.
     if (!fetchBlurPlaceholder) return
     if (disableBlurPlaceholder) return
     if (!src) return
     if (blurDataURLProp) return
-
     if (blurDataUrlCache.has(src)) return
 
     const controller = new AbortController()
@@ -90,9 +82,7 @@ export function ImageWithFallback({
         blurDataUrlCache.set(src, next)
         setFetchedBlur({ src, blurDataURL: next })
       })
-      .catch(() => {
-        // Ignore; we can still load the full image normally.
-      })
+      .catch(() => {})
 
     return () => controller.abort()
   }, [src, blurDataURLProp, disableBlurPlaceholder, fetchBlurPlaceholder])
@@ -113,16 +103,8 @@ export function ImageWithFallback({
   const computedSizes =
     sizes ?? (fill ? '100vw' : width ? `${width}px` : undefined)
 
-  // Cloudinary automatic delivery optimizations.
-  // - format="auto" enables WebP/AVIF when supported
-  // - quality="auto" lets Cloudinary pick a good compression level
-  // - dpr="auto" serves crisp images without overshooting bytes
-  const computedFormat = format ?? 'auto'
-  const computedQuality = quality ?? 'auto:good'
-  const computedDpr = dpr ?? 'auto'
-
   return (
-    <CldImage
+    <Image
       src={src}
       alt={alt}
       className={className}
@@ -130,10 +112,8 @@ export function ImageWithFallback({
       width={!fill ? width : undefined}
       height={!fill ? height : undefined}
       sizes={computedSizes}
-      format={computedFormat}
-      quality={computedQuality}
-      dpr={computedDpr}
-      preload={priority}
+      quality={typeof quality === 'number' ? quality : undefined}
+      priority={priority}
       loading={priority ? 'eager' : 'lazy'}
       unoptimized={unoptimized}
       placeholder={disableBlurPlaceholder ? 'empty' : 'blur'}

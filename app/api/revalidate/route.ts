@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-const CLOUDINARY_CACHE_TAG = 'cloudinary-projects';
+const SUPABASE_CACHE_TAG = 'supabase-projects';
 
 export async function GET(req: NextRequest) {
   const expectedSecret = process.env.REVALIDATE_SECRET;
@@ -19,9 +19,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid secret' }, { status: 401 });
   }
 
-    revalidateTag(CLOUDINARY_CACHE_TAG, 'max');
+  revalidateTag(SUPABASE_CACHE_TAG);
   revalidatePath('/');
   revalidatePath('/work');
 
-  return NextResponse.json({ revalidated: true, tag: CLOUDINARY_CACHE_TAG });
+  return NextResponse.json({ revalidated: true, tag: SUPABASE_CACHE_TAG });
 }
