@@ -1,22 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-});
-
-// Initialize Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-// Stripe webhook secret
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+import { getStripe } from '@/app/lib/stripe';
+import { createServerSupabase } from '@/app/lib/supabase';
+import type Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripe();
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
   const sig = req.headers.get('stripe-signature');
   const rawBody = await req.text();
 
@@ -30,6 +19,7 @@ export async function POST(req: NextRequest) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
     const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+    const supabase = createServerSupabase();
 
     // For each purchased product, decrement stock in Supabase
     for (const item of lineItems.data) {

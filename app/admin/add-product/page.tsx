@@ -1,0 +1,154 @@
+'use client';
+
+import { useActionState, useRef, useState } from 'react';
+import { addProduct, type AddProductState } from '../actions';
+
+const initialState: AddProductState = { success: false };
+
+export default function AddProductPage() {
+  const [state, formAction, isPending] = useActionState(addProduct, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreview(url);
+    } else {
+      setPreview(null);
+    }
+  }
+
+  // Reset form on success
+  if (state.success && formRef.current) {
+    formRef.current.reset();
+    setPreview(null);
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground px-6 py-16">
+      <div className="max-w-lg mx-auto">
+        <h1 className="text-3xl tracking-tight mb-8">ADD PRODUCT</h1>
+
+        {state.error && (
+          <div className="mb-6 rounded-md border border-red-400 bg-red-50 px-4 py-3 text-red-700 text-sm">
+            {state.error}
+          </div>
+        )}
+
+        {state.success && (
+          <div className="mb-6 rounded-md border border-green-400 bg-green-50 px-4 py-3 text-green-700 text-sm">
+            Product created successfully!
+          </div>
+        )}
+
+        <form ref={formRef} action={formAction} className="space-y-5">
+          {/* Name */}
+          <label className="block">
+            <span className="text-sm font-medium">Name *</span>
+            <input
+              name="name"
+              type="text"
+              required
+              className="mt-1 block w-full rounded-md border border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            />
+          </label>
+
+          {/* Description */}
+          <label className="block">
+            <span className="text-sm font-medium">Description</span>
+            <textarea
+              name="description"
+              rows={3}
+              className="mt-1 block w-full rounded-md border border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            />
+          </label>
+
+          {/* Price */}
+          <label className="block">
+            <span className="text-sm font-medium">Price (£) *</span>
+            <input
+              name="price"
+              type="number"
+              step="0.01"
+              min="0.01"
+              required
+              className="mt-1 block w-full rounded-md border border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            />
+          </label>
+
+          {/* Stock */}
+          <label className="block">
+            <span className="text-sm font-medium">Stock</span>
+            <input
+              name="stock"
+              type="number"
+              min="0"
+              defaultValue={0}
+              className="mt-1 block w-full rounded-md border border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            />
+          </label>
+
+          {/* Categories */}
+          <label className="block">
+            <span className="text-sm font-medium">
+              Categories{' '}
+              <span className="text-muted-foreground font-normal">(comma-separated)</span>
+            </span>
+            <input
+              name="categories"
+              type="text"
+              placeholder="LANDSCAPE, BW"
+              className="mt-1 block w-full rounded-md border border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            />
+          </label>
+
+          {/* Year */}
+          <label className="block">
+            <span className="text-sm font-medium">Year</span>
+            <input
+              name="year"
+              type="text"
+              defaultValue={new Date().getFullYear().toString()}
+              className="mt-1 block w-full rounded-md border border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-foreground"
+            />
+          </label>
+
+          {/* Image */}
+          <label className="block">
+            <span className="text-sm font-medium">Cover Image</span>
+            <input
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="mt-1 block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-foreground file:px-4 file:py-2 file:text-sm file:font-medium file:text-background hover:file:opacity-80"
+            />
+          </label>
+
+          {/* Preview */}
+          {preview && (
+            <div className="relative aspect-4/5 max-w-[200px] overflow-hidden rounded-md bg-muted">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={preview}
+                alt="Preview"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full rounded-md bg-foreground px-4 py-2.5 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+          >
+            {isPending ? 'Creating…' : 'Create Product'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}

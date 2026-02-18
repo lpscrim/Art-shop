@@ -8,12 +8,15 @@ export interface Project {
   imageUrl: string;       // Supabase Storage public URL
   galleryImages?: string[];
   text: string;
+  price_hw: number;       // price in cents
+  stock_level: number;
+  stripe_price_id: string | null;
 }
 
 function getSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error('Missing Supabase env vars');
+  if (!url || !key) return null;
   return createClient(url, key);
 }
 
@@ -29,6 +32,7 @@ function getSupabaseClient() {
  */
 export async function getProjects(): Promise<Project[]> {
   const supabase = getSupabaseClient();
+  if (!supabase) return [];
 
   const { data: products, error } = await supabase
     .from('products')
@@ -56,6 +60,9 @@ export async function getProjects(): Promise<Project[]> {
         imageUrl: product.image_url ?? '',
         ...(galleryImages.length > 0 && { galleryImages }),
         text: product.description ?? '',
+        price_hw: product.price_hw ?? 0,
+        stock_level: product.stock_level ?? 0,
+        stripe_price_id: product.stripe_price_id ?? null,
       };
     })
   );
@@ -68,7 +75,8 @@ export async function getProjects(): Promise<Project[]> {
  * Supabase Storage and return their public URLs.
  */
 async function fetchProductGalleryImages(
-  supabase: ReturnType<typeof createClient>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
   productId: string
 ): Promise<string[]> {
   const bucket = 'product-images';
@@ -81,8 +89,8 @@ async function fetchProductGalleryImages(
   if (error || !files) return [];
 
   return files
-    .filter((f) => !f.name.startsWith('.'))
-    .map((f) => {
+    .filter((f: { name: string }) => !f.name.startsWith('.'))
+    .map((f: { name: string }) => {
       const { data } = supabase.storage
         .from(bucket)
         .getPublicUrl(`${folder}${f.name}`);
