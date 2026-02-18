@@ -36,7 +36,7 @@ export async function addProduct(
     if (!name?.trim()) return { success: false, error: 'Name is required.' };
     if (!priceStr?.trim()) return { success: false, error: 'Price is required.' };
 
-    const priceHw = Math.round(parseFloat(priceStr) * 100); // dollars → cents
+    const priceHw = Math.round(parseFloat(priceStr) * 100); // pounds → pence
     if (Number.isNaN(priceHw) || priceHw <= 0)
       return { success: false, error: 'Price must be a positive number.' };
 

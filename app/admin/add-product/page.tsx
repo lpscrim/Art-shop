@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useRef, useState } from 'react';
+import { useActionState, useRef, useState, useEffect } from 'react';
 import { addProduct, type AddProductState } from '../actions';
 
 const initialState: AddProductState = { success: false };
@@ -21,10 +21,16 @@ export default function AddProductPage() {
   }
 
   // Reset form on success
-  if (state.success && formRef.current) {
-    formRef.current.reset();
-    setPreview(null);
-  }
+  useEffect(() => {
+    if (state.success) {
+      formRef.current?.reset();
+      // Use setTimeout to defer state update and avoid cascading renders
+      const timer = setTimeout(() => {
+        setPreview(null);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [state]);
 
   return (
     <div className="min-h-screen bg-background text-foreground px-6 py-16">
