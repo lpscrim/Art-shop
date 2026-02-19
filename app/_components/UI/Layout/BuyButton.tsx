@@ -15,7 +15,7 @@ export function BuyButton({ stripePriceId, stockLevel, priceHw }: BuyButtonProps
   const outOfStock = stockLevel <= 0;
   const notAvailable = !stripePriceId;
 
-  const displayPrice = (priceHw / 100).toFixed(2);
+  const displayPrice = (priceHw / 100).toFixed(0);
 
   async function handleClick() {
     if (outOfStock || notAvailable || loading) return;
@@ -48,11 +48,20 @@ export function BuyButton({ stripePriceId, stockLevel, priceHw }: BuyButtonProps
       disabled={outOfStock || notAvailable || loading}
       size='sm'
     >
-      {loading
-        ? '…'
-        : outOfStock
-          ? 'N/A'
-          : `BUY`}
+      <div className="relative inline-flex">
+        <span className={`transition-opacity duration-200 ${loading || outOfStock ? 'opacity-100' : 'group-hover:opacity-0 opacity-100'}`}>
+          {loading
+            ? '…'
+            : outOfStock
+              ? 'N/A'
+              : `BUY`}
+        </span>
+        {!loading && !outOfStock && (
+          <span className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 opacity-0 group-hover:opacity-100">
+            £{displayPrice}
+          </span>
+        )}
+      </div>
     </Button>
   );
 }
