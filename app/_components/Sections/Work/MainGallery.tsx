@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
 import { Card } from "../../UI/Layout/Card";
-
-const INITIAL_PHOTOS_TO_RENDER = 96;
-const PHOTOS_PAGE_SIZE = 96;
 
 interface Project {
   id: number;
@@ -17,30 +13,22 @@ interface Project {
 }
 
 export interface MainGalleryProps {
-  viewMode: "projects" | "photos";
-  setViewMode: React.Dispatch<React.SetStateAction<"projects" | "photos">>;
   selectedCategories: string[];
   setSelectedCategories: React.Dispatch<React.SetStateAction<string[]>>;
   filteredProjects: Project[];
-  filteredPhotos: string[];
   sortedVisibleCategories: [string, number][];
   toggleCategory: (cat: string) => void;
-  onCardClick: (mode: "photos" | "projects", index: number, project?: Project) => void;
+  onCardClick: (index: number, project: Project) => void;
 }
 
 export function MainGallery({
-  viewMode,
-  setViewMode,
   selectedCategories,
   setSelectedCategories,
   filteredProjects,
-  filteredPhotos,
   sortedVisibleCategories,
   toggleCategory,
-    onCardClick,
+  onCardClick,
 }: MainGalleryProps) {
-  const selectedCategoriesKey = selectedCategories.join("|");
-  const photosResetKey = `${selectedCategoriesKey}|${filteredPhotos.length}`;
 
   return (
     <>
@@ -48,16 +36,10 @@ export function MainGallery({
         <div className="xl:w-1/2 text-sm sm:text-base py-2">
           <div>
             <button
-              onClick={() => { setViewMode("projects"); setSelectedCategories([]); }}
-              className={`mr-2 cursor-crosshair transition-opacity ${viewMode === "projects" && selectedCategories.length === 0 ? "text-foreground" : "text-foreground/50"}`}
+              onClick={() => { setSelectedCategories([]); }}
+              className={`mr-2 cursor-crosshair transition-opacity ${selectedCategories.length === 0 ? "text-foreground" : "text-foreground/50"}`}
             >
               PROJECTS [{filteredProjects.length}]
-            </button>
-            <button
-              onClick={() => { setViewMode("photos"); setSelectedCategories([]); }}
-              className={`mr-2 cursor-crosshair transition-opacity ${viewMode === "photos" && selectedCategories.length === 0 ? "text-foreground" : "text-foreground/50"}`}
-            >
-              PHOTOS [{filteredPhotos.length}]
             </button>
           </div>
           <div className="flex flex-wrap gap-0 mt-2">
@@ -80,10 +62,9 @@ export function MainGallery({
           </div>
         </div>
       </div>
-      {viewMode === "projects" ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 px-0">
-          {filteredProjects.map((project, idx) => (
-            <div key={project.id} className="relative group">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 px-0">
+        {filteredProjects.map((project, idx) => (
+          <div key={project.id} className="relative group">
             <Card
               key={project.id}
               categories={project.categories}
@@ -95,83 +76,20 @@ export function MainGallery({
               imageWidth={900}
               imageHeight={1125}
               imageQuality="auto:eco"
-              handleOnClick={() => onCardClick("projects", idx, project)}
+              handleOnClick={() => onCardClick(idx, project)}
             />
             <div className="absolute inset-x-0 top-8 px-4 group-hover:opacity-100 opacity-0 flex flex-col group-hover:mt-2 z-60 transition-all duration-500 pointer-events-none max-w-full">
-                <h3 className="tracking-tight text-background wrap-break-word">
-                  {project.title}
-                </h3>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-background wrap-break-word max-w-full">
-                  <span className="wrap-break-word max-w-full">[{project.categories.map(category => category).join(', ')}]</span>
-                  <span>{project.year}</span>
-                </div>
+              <h3 className="tracking-tight text-background wrap-break-word">
+                {project.title}
+              </h3>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-background wrap-break-word max-w-full">
+                <span className="wrap-break-word max-w-full">[{project.categories.join(', ')}]</span>
+                <span>{project.year}</span>
               </div>
             </div>
-          ))}
-        </div>
-      ) : (
-        <>
-          <PhotosGrid
-            key={photosResetKey}
-            filteredPhotos={filteredPhotos}
-            onCardClick={onCardClick}
-          />
-        </>
-      )}
-    </>
-  );
-}
-
-function PhotosGrid({
-  filteredPhotos,
-  onCardClick,
-}: {
-  filteredPhotos: string[];
-  onCardClick: (mode: "photos" | "projects", index: number) => void;
-}) {
-  const [visiblePhotosCount, setVisiblePhotosCount] = useState(
-    INITIAL_PHOTOS_TO_RENDER
-  );
-
-  const photosToRender = filteredPhotos.slice(0, visiblePhotosCount);
-
-  return (
-    <>
-      <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-1">
-        {photosToRender.map((photo, index) => (
-          <Card
-            key={photo + index}
-            categories={[]}
-            imageUrl={photo}
-            year=""
-            title=""
-            imageSizes="(min-width: 1024px) 12.5vw, (min-width: 768px) 16.7vw, 33vw"
-            imageWidth={600}
-            imageHeight={750}
-            imageQuality="auto:eco"
-            handleOnClick={() => onCardClick("photos", index)}
-          />
+          </div>
         ))}
       </div>
-
-      {filteredPhotos.length > visiblePhotosCount && (
-        <div className="flex justify-center py-10">
-          <button
-            className="cursor-crosshair transition-opacity text-foreground/80 hover:text-foreground"
-            onClick={() =>
-              setVisiblePhotosCount((n) =>
-                Math.min(filteredPhotos.length, n + PHOTOS_PAGE_SIZE)
-              )
-            }
-          >
-            LOAD MORE [{Math.min(
-              filteredPhotos.length,
-              visiblePhotosCount + PHOTOS_PAGE_SIZE
-            )}
-            /{filteredPhotos.length}]
-          </button>
-        </div>
-      )}
     </>
   );
 }

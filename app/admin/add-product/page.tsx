@@ -5,11 +5,13 @@ import { addProduct, type AddProductState } from './actions';
 
 const initialState: AddProductState = { success: false };
 const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
+const MAX_SECONDARY = 4;
 
 export default function AddProductPage() {
   const [state, formAction, isPending] = useActionState(addProduct, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [secondaryPreviews, setSecondaryPreviews] = useState<(string | null)[]>([]);
   const [fileError, setFileError] = useState<string | null>(null);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -18,7 +20,7 @@ export default function AddProductPage() {
 
     if (file) {
       if (file.size > MAX_FILE_SIZE) {
-        setFileError(`Image exceeds 15 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB). Please choose a smaller file.`);
+        setFileError(`Cover image exceeds 15 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB). Please choose a smaller file.`);
         e.target.value = '';
         setPreview(null);
         return;
@@ -30,6 +32,28 @@ export default function AddProductPage() {
     }
   }
 
+  function handleSecondaryChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFileError(null);
+    const files = Array.from(e.target.files ?? []);
+
+    if (files.length > MAX_SECONDARY) {
+      setFileError(`You can upload a maximum of ${MAX_SECONDARY} secondary images. You selected ${files.length}.`);
+      e.target.value = '';
+      setSecondaryPreviews([]);
+      return;
+    }
+
+    const oversized = files.find(f => f.size > MAX_FILE_SIZE);
+    if (oversized) {
+      setFileError(`Secondary image "${oversized.name}" exceeds 15 MB limit (${(oversized.size / 1024 / 1024).toFixed(1)} MB).`);
+      e.target.value = '';
+      setSecondaryPreviews([]);
+      return;
+    }
+
+    setSecondaryPreviews(files.map(f => URL.createObjectURL(f)));
+  }
+
   // Reset form on success
   useEffect(() => {
     if (state.success) {
@@ -37,6 +61,7 @@ export default function AddProductPage() {
       // Use setTimeout to defer state update and avoid cascading renders
       const timer = setTimeout(() => {
         setPreview(null);
+        setSecondaryPreviews([]);
       }, 0);
       return () => clearTimeout(timer);
     }
@@ -145,13 +170,41 @@ export default function AddProductPage() {
 
           {/* Preview */}
           {preview && (
-            <div className="relative aspect-4/5 max-w-[200px] overflow-hidden rounded-md bg-muted">
+            <div className="relative aspect-4/5 max-w-50 overflow-hidden rounded-md bg-muted">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={preview}
                 alt="Preview"
                 className="h-full w-full object-cover"
               />
+            </div>
+          )}
+
+          {/* Secondary Images (up to 4) */}
+          <label className="block">
+            <span className="text-sm font-medium">
+              Gallery Images{' '}
+              <span className="text-muted-foreground font-normal">(up to 4, optional)</span>
+            </span>
+            <input
+              name="secondary"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleSecondaryChange}
+              className="mt-1 block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-foreground file:px-4 file:py-2 file:text-sm file:font-medium file:text-background hover:file:opacity-80"
+            />
+          </label>
+
+          {/* Secondary Previews */}
+          {secondaryPreviews.length > 0 && (
+            <div className="flex gap-2 flex-wrap">
+              {secondaryPreviews.map((src, i) => (
+                <div key={i} className="relative aspect-4/5 w-25 overflow-hidden rounded-md bg-muted">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={src!} alt={`Secondary ${i + 1}`} className="h-full w-full object-cover" />
+                </div>
+              ))}
             </div>
           )}
 

@@ -7,9 +7,6 @@ import { WorkGallery } from "../_components/Sections/Work/WorkGallery";
 export default async function WorkPage() {
   const projects = await getProjects();
 
-  // All pictures in all projects
-  const allPhotos = projects.flatMap(project => [project.imageUrl, ...(project.galleryImages || [])]);
-
   // Count categories
   const categoryCounts = projects.reduce((acc, project) => {
     project.categories.forEach((category) => {
@@ -29,7 +26,6 @@ export default async function WorkPage() {
         <WorkGallery 
           projects={projects} 
           categoryCounts={sortedCategories} 
-          allPhotos={allPhotos} 
         />
       </Suspense>
     </main>

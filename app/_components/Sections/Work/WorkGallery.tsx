@@ -19,20 +19,17 @@ interface Project {
 interface WorkGalleryProps {
   projects: Project[];
   categoryCounts: [string, number][];
-  allPhotos: string[];
 }
 
 export function WorkGallery({
   projects,
   categoryCounts,
-  allPhotos,
 }: WorkGalleryProps) {
 
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
-  const [viewMode, setViewMode] = useState<"projects" | "photos">("projects");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -50,42 +47,18 @@ export function WorkGallery({
   }, [projects]);
 
 
-  // Filtered projects/photos by selected categories
+  // Filtered projects by selected categories
   const filteredProjects = selectedCategories.length > 0
     ? projects.filter((p) => selectedCategories.every(cat => p.categories.includes(cat)))
     : projects;
-  const filteredPhotos = selectedCategories.length > 0
-    ? filteredProjects.flatMap((p) => [p.imageUrl, ...(p.galleryImages || [])])
-    : allPhotos;
 
-  // Category counts: projects or photos mode
-  let visibleCategoryCounts: Record<string, number> = {};
-  if (viewMode === "projects") {
-    visibleCategoryCounts = filteredProjects.reduce((acc, project) => {
-      project.categories.forEach((category) => {
-        acc[category] = (acc[category] || 0) + 1;
-      });
-      return acc;
-    }, {} as Record<string, number>);
-  } else {
-    // In photos mode, count categories for visible photos
-    // Build a map of photo -> categories
-    const photoToCategories: Record<string, string[]> = {};
-    projects.forEach((project) => {
-      // Main image
-      photoToCategories[project.imageUrl] = project.categories;
-      // Gallery images
-      (project.galleryImages || []).forEach(img => {
-        photoToCategories[img] = project.categories;
-      });
+  // Category counts
+  const visibleCategoryCounts: Record<string, number> = filteredProjects.reduce((acc, project) => {
+    project.categories.forEach((category) => {
+      acc[category] = (acc[category] || 0) + 1;
     });
-    filteredPhotos.forEach((photo) => {
-      const cats = photoToCategories[photo] || [];
-      cats.forEach((cat) => {
-        visibleCategoryCounts[cat] = (visibleCategoryCounts[cat] || 0) + 1;
-      });
-    });
-  }
+    return acc;
+  }, {} as Record<string, number>);
 
   // Use the array of [category, count] pairs for all categories
   const sortedVisibleCategories: [string, number][] = categoryCounts
@@ -105,21 +78,14 @@ export function WorkGallery({
   };
 
   // Handler to open gallery
-  const handleCardClick = (mode: "photos" | "projects", index: number, project?: typeof projects[number]) => {
-    if (mode === "photos") {
-      setModalImages(filteredPhotos);
-      setModalIndex(index);
-      setIsProject(false);
-      setText("");
-    } else if (mode === "projects" && project) {
-      const imgs = [project.imageUrl, ...(project.galleryImages || [])];
-      setIsProject(true);
-      setName(project.title);
-      setYear(project.year);
-      setModalImages(imgs);
-      setModalIndex(0);
-      setText(project.text || "");
-    }
+  const handleCardClick = (index: number, project: typeof projects[number]) => {
+    const imgs = [project.imageUrl, ...(project.galleryImages || [])];
+    setIsProject(true);
+    setName(project.title);
+    setYear(project.year);
+    setModalImages(imgs);
+    setModalIndex(0);
+    setText(project.text || "");
     setModalOpen(true);
   };
 
@@ -141,7 +107,6 @@ export function WorkGallery({
     queueMicrotask(() => {
       if (cancelled) return;
 
-      setViewMode("projects");
       setSelectedCategories([]);
 
       const imgs = [project.imageUrl, ...(project.galleryImages || [])];
@@ -179,12 +144,9 @@ export function WorkGallery({
   return (
     <section id="work" className="min-h-[75svh] px-6 w-full">
       {!modalOpen && <MainGallery
-        viewMode={viewMode}
-        setViewMode={setViewMode}
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
         filteredProjects={filteredProjects}
-        filteredPhotos={filteredPhotos}
         sortedVisibleCategories={sortedVisibleCategories}
         toggleCategory={toggleCategory}
         onCardClick={handleCardClick}

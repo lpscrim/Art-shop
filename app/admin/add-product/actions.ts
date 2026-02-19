@@ -31,12 +31,21 @@ export async function addProduct(
     const categoriesRaw = formData.get('categories') as string | null;
     const year = formData.get('year') as string | null;
     const imageFile = formData.get('image') as File | null;
+    const secondaryFiles = formData.getAll('secondary') as File[];
 
     // ---------- Validation ----------
     if (!name?.trim()) return { success: false, error: 'Name is required.' };
 
-    if (imageFile && imageFile.size > 10 * 1024 * 1024)
-      return { success: false, error: 'Image exceeds 10 MB limit. Please choose a smaller file.' };
+    if (imageFile && imageFile.size > 15 * 1024 * 1024)
+      return { success: false, error: 'Cover image exceeds 15 MB limit. Please choose a smaller file.' };
+
+    const validSecondary = secondaryFiles.filter(f => f.size > 0);
+    if (validSecondary.length > 4)
+      return { success: false, error: 'You can upload a maximum of 4 gallery images.' };
+
+    const oversized = validSecondary.find(f => f.size > 15 * 1024 * 1024);
+    if (oversized)
+      return { success: false, error: `Gallery image "${oversized.name}" exceeds 15 MB limit.` };
     if (!priceStr?.trim()) return { success: false, error: 'Price is required.' };
 
     const priceHw = Math.round(parseFloat(priceStr) * 100); // pounds → pence
@@ -122,6 +131,26 @@ export async function addProduct(
 
     if (updateError)
       console.error('Failed to save Stripe IDs:', updateError.message);
+
+    // ---------- Upload secondary (gallery) images ----------
+    if (validSecondary.length > 0) {
+      for (let i = 0; i < validSecondary.length; i++) {
+        const file = validSecondary[i];
+        const ext = file.name.split('.').pop() ?? 'webp';
+        // Store under product-images/{productId}/ so fetchProductGalleryImages picks them up
+        const storagePath = `${product.id}/${String(i).padStart(2, '0')}_${crypto.randomUUID()}.${ext}`;
+
+        const { error: secUploadError } = await supabase.storage
+          .from('product-images')
+          .upload(storagePath, file, {
+            contentType: file.type,
+            upsert: false,
+          });
+
+        if (secUploadError)
+          console.error(`Failed to upload gallery image ${i + 1}:`, secUploadError.message);
+      }
+    }
 
     // ---------- Revalidate ----------
     revalidatePath('/');
