@@ -46,17 +46,17 @@ export function BuyButton({ stripePriceId, stockLevel, priceHw }: BuyButtonProps
     <button
       onClick={handleClick}
       disabled={outOfStock || notAvailable || loading}
-      className={`rounded-md px-5 py-2.5 text-sm font-medium transition-opacity ${
+      className={`px-5 py-2.5 text-sm font-medium transition-opacity ${
         outOfStock
-          ? 'bg-muted text-muted-foreground cursor-not-allowed'
-          : 'bg-foreground text-background hover:opacity-90 disabled:opacity-50'
+          ? ' text-foreground cursor-not-allowed'
+          : ' text-foreground hover:opacity-90 disabled:opacity-50'
       }`}
     >
       {loading
         ? 'Redirecting…'
         : outOfStock
-          ? 'Out of Stock'
-          : `Buy Now — £${displayPrice}`}
+          ? 'N/A'
+          : `£${displayPrice}`}
     </button>
   );
 }
