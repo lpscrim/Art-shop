@@ -20,6 +20,9 @@ interface PhotoModalProps {
   images?: string[];
   index?: number;
   changePhotoId?: (idx: number) => void;
+  stripePriceId: string | null;
+  stockLevel: number;
+  priceHw: number;
 }
 
 export const PhotoModal: React.FC<PhotoModalProps> = ({
@@ -37,6 +40,9 @@ export const PhotoModal: React.FC<PhotoModalProps> = ({
   images = [],
   index = 0,
   changePhotoId = () => {},
+  stripePriceId,
+  stockLevel,
+  priceHw,
 }) => {
   // Refs for thumbnails
   const stripRef = useRef<HTMLDivElement | null>(null);
@@ -276,9 +282,13 @@ export const PhotoModal: React.FC<PhotoModalProps> = ({
           )}
           {!isProject && <span className="opacity-0">{"0"}</span>}
         </div>
-        <div className="flex flex-row  w-70">
-            <div className="flex justify-center w-30 -mr-10 text-foreground z-100">
-              <BuyButton />
+        <div className="flex flex-row  w-70 mr-1">
+            <div className="flex justify-center w-30 -mr-8 text-foreground z-100">
+              <BuyButton
+                stripePriceId={stripePriceId}
+                stockLevel={stockLevel}
+                priceHw={priceHw}
+              />
             </div>
             <div className="flex justify-center w-21 -mr-4 text-foreground z-100">
               {isProject && text && (

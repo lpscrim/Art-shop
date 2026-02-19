@@ -39,6 +39,9 @@ export function WorkGallery({
   const [name, setName] = useState<string>("");
   const [year, setYear] = useState<string>("");
   const [text, setText] = useState<string>("");
+  const [stripePriceId, setStripePriceId] = useState<string | null>(null);
+  const [stockLevel, setStockLevel] = useState<number>(0);
+  const [priceHw, setPriceHw] = useState<number>(0);
 
   const lastOpenedProjectIdRef = useRef<number | null>(null);
 
@@ -86,6 +89,9 @@ export function WorkGallery({
     setModalImages(imgs);
     setModalIndex(0);
     setText(project.text || "");
+    setStripePriceId(project.stripe_price_id ?? null);
+    setStockLevel(project.stock_level);
+    setPriceHw(project.price_hw);
     setModalOpen(true);
   };
 
@@ -114,6 +120,9 @@ export function WorkGallery({
       setName(project.title);
       setYear(project.year);
       setText(project.text || "");
+      setStripePriceId(project.stripe_price_id ?? null);
+      setStockLevel(project.stock_level);
+      setPriceHw(project.price_hw);
       setModalImages(imgs);
       setModalIndex(0);
       setModalOpen(true);
@@ -166,6 +175,9 @@ export function WorkGallery({
         year={year}
         text={text}
         changePhotoId={handleThumbClick}
+        stripePriceId={stripePriceId}
+        stockLevel={stockLevel}
+        priceHw={priceHw}
       />
     </section>
   );
