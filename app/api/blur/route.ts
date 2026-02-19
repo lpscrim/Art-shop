@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { getBase64ImageUrl } from '@/app/lib/getBase64ImageUrl';
+import { getBase64ImageUrl } from '@/app/_lib/getBase64ImageUrl';
 
 export const runtime = 'nodejs';
 

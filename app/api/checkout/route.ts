@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getStripe } from '@/app/lib/stripe';
+import { getStripe } from '@/app/_lib/stripe';
 
 export async function POST(req: NextRequest) {
   try {

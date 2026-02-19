@@ -1,6 +1,6 @@
-import { ImageWithFallback } from "@/app/components/UI/Layout/ImageWithFallback";
-import { getProjects } from "@/app/data/projects";
-import Button from "@/app/components/UI/Layout/Button";
+import { ImageWithFallback } from "@/app/_components/UI/Layout/ImageWithFallback";
+import { getProjects } from "@/app/_data/projects";
+import Button from "@/app/_components/UI/Layout/Button";
 import Link from "next/link";
 
 export async function Projects() {

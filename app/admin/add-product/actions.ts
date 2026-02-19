@@ -1,7 +1,7 @@
 'use server';
 
-import { createServerSupabase } from '@/app/lib/supabase';
-import { getStripe } from '@/app/lib/stripe';
+import { createServerSupabase } from '@/app/_lib/supabase';
+import { getStripe } from '@/app/_lib/stripe';
 import { revalidatePath } from 'next/cache';
 
 export interface AddProductState {
@@ -34,6 +34,9 @@ export async function addProduct(
 
     // ---------- Validation ----------
     if (!name?.trim()) return { success: false, error: 'Name is required.' };
+
+    if (imageFile && imageFile.size > 10 * 1024 * 1024)
+      return { success: false, error: 'Image exceeds 10 MB limit. Please choose a smaller file.' };
     if (!priceStr?.trim()) return { success: false, error: 'Price is required.' };
 
     const priceHw = Math.round(parseFloat(priceStr) * 100); // pounds → pence

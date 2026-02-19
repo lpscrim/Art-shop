@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { getProjects } from "../data/projects";
-import { WorkGallery } from "../components/Sections/Work/WorkGallery";
+import { getProjects } from "../_data/projects";
+import { WorkGallery } from "../_components/Sections/Work/WorkGallery";
 
 
 

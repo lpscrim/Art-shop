@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
-import { Header } from "./components/Sections/Header";
-import { Footer } from "./components/Sections/Footer";
+import { Header } from "./_components/Sections/Header";
+import { Footer } from "./_components/Sections/Footer";
 
 
 function getSiteUrl(): string {

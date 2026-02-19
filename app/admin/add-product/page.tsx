@@ -1,18 +1,28 @@
 'use client';
 
 import { useActionState, useRef, useState, useEffect } from 'react';
-import { addProduct, type AddProductState } from '../actions';
+import { addProduct, type AddProductState } from './actions';
 
 const initialState: AddProductState = { success: false };
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15 MB
 
 export default function AddProductPage() {
   const [state, formAction, isPending] = useActionState(addProduct, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
+    setFileError(null);
+
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        setFileError(`Image exceeds 15 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB). Please choose a smaller file.`);
+        e.target.value = '';
+        setPreview(null);
+        return;
+      }
       const url = URL.createObjectURL(file);
       setPreview(url);
     } else {
@@ -37,9 +47,9 @@ export default function AddProductPage() {
       <div className="max-w-lg mx-auto">
         <h1 className="text-3xl tracking-tight mb-8">ADD PRODUCT</h1>
 
-        {state.error && (
+        {(state.error || fileError) && (
           <div className="mb-6 rounded-md border border-red-400 bg-red-50 px-4 py-3 text-red-700 text-sm">
-            {state.error}
+            {fileError || state.error}
           </div>
         )}
 
