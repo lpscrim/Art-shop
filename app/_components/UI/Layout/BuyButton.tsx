@@ -1,5 +1,5 @@
 'use client';
-
+import Button from './Button';
 import { useState } from 'react';
 
 interface BuyButtonProps {
@@ -43,20 +43,16 @@ export function BuyButton({ stripePriceId, stockLevel, priceHw }: BuyButtonProps
   }
 
   return (
-    <button
+    <Button
       onClick={handleClick}
       disabled={outOfStock || notAvailable || loading}
-      className={`px-5 py-2.5 text-sm font-medium transition-opacity ${
-        outOfStock
-          ? ' text-foreground cursor-not-allowed'
-          : ' text-foreground hover:opacity-90 disabled:opacity-50'
-      }`}
+      size='sm'
     >
       {loading
-        ? 'Redirecting…'
+        ? '…'
         : outOfStock
           ? 'N/A'
-          : `£${displayPrice}`}
-    </button>
+          : `BUY`}
+    </Button>
   );
 }
