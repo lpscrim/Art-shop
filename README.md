@@ -1,18 +1,21 @@
-# Art Shop  Photography Portfolio & Store
+# Art Shop — Photography Portfolio & E-Commerce Store
 
-A photography & visual art portfolio built with **Next.js 16 App Router**, **Tailwind CSS 4**, **Framer Motion**, **Supabase**, and **Stripe**.
+A photography & visual art portfolio with integrated shopping cart and e-commerce platform. Built with **Next.js 16**, **Tailwind CSS 4**, **Framer Motion**, **Supabase**, and **Stripe**.
 
 ## Features
 
-- **Supabase-powered galleries**  products stored in PostgreSQL, images in Supabase Storage
-- **Stripe integration**  checkout with automatic stock management via webhooks
-- **Photo modal** with swipe support, thumbnails, and loading progress
-- **Category filtering** across projects and individual photos
-- **Responsive hero** with animated reveal
-- **SEO**  sitemap, robots.txt, Open Graph / Twitter meta via Next.js metadata API
-- **Blur placeholders** generated on demand via `/api/blur`
-- **On-demand revalidation**  call `/api/revalidate?secret=...` after updating products
-- **Standalone output**  ready for Docker / serverless deployment
+- **Product Gallery** — Showcase work with categories, filters, and details
+- **Shopping Cart** — Real-time cart with item counts in menu
+- **Stripe Checkout** — Secure payments with automatic stock management
+- **Photo Modal** — Swipe gestures, thumbnails, lazy loading, blur placeholders
+- **Admin Dashboard** — Secure Supabase auth with email allowlist
+  - Add products with cover + up to 4 gallery images
+  - Edit product info, pricing, stock, images
+  - Delete products with automatic cleanup
+  - HTTP-only session cookies, server-side validation
+- **Responsive Design** — Mobile-first, hero animations, touch-friendly
+- **SEO & Cache** — Sitemap, robots.txt, Open Graph/Twitter meta, on-demand revalidation
+- **Production-Ready** — Docker-friendly, serverless-compatible
 
 ## Quick Start
 
@@ -40,16 +43,20 @@ Create a `.env.local` file:
 ```bash
 # Supabase (required)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Stripe (required)
 STRIPE_SECRET_KEY=sk_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
-# Site URL (recommended  used for sitemap / metadata)
+# Admin auth (required for /admin routes)
+ADMIN_EMAIL_ALLOWLIST=your-email@example.com
+
+# Site URL (recommended)
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 
-# Revalidation secret (recommended)
+# Revalidation secret (optional)
 REVALIDATE_SECRET=some-long-random-string
 ```
 
@@ -87,26 +94,62 @@ END;
 $$ LANGUAGE plpgsql;
 ```
 
-## Customisation Checklist
+## Customization Checklist
 
+- [ ] Set up Supabase project and get `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] Set up Stripe account and get `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`
+- [ ] Add your email to `ADMIN_EMAIL_ALLOWLIST` in `.env.local`
+- [ ] Create `products` table in Supabase (see schema above)
+- [ ] Create `product-images` Storage bucket in Supabase
+- [ ] Create `decrement_stock` RPC function in Supabase (see above)
 - [ ] Replace hero images in `public/` (`tree1.JPG`, `pic1.JPG`)
-- [ ] Replace `Me_Sun2.svg` (about section) or swap for your own image
-- [ ] Update site name in `app/layout.tsx` metadata and `Header.tsx`
-- [ ] Update About section bio in `app/components/Sections/Home/About.tsx`
-- [ ] Update Contact section links in `app/components/Sections/Home/Contact.tsx`
-- [ ] Update Footer name in `app/components/Sections/Footer.tsx`
+- [ ] Replace `Me_Sun2.svg` (about section) with your own photo
+- [ ] Update site name in [app/layout.tsx](app/layout.tsx) and [app/_components/Sections/Header.tsx](app/_components/Sections/Header.tsx)
+- [ ] Update about section bio in [app/_components/Sections/Home/About.tsx](app/_components/Sections/Home/About.tsx)
+- [ ] Update contact links in [app/_components/Sections/Home/Contact.tsx](app/_components/Sections/Home/Contact.tsx)
+- [ ] Update footer name in [app/_components/Sections/Footer.tsx](app/_components/Sections/Footer.tsx)
 - [ ] Replace favicons in `public/`
-- [ ] Set your Supabase credentials in `.env.local`
-- [ ] Set your Stripe credentials in `.env.local`
 - [ ] Set `NEXT_PUBLIC_SITE_URL` for correct SEO URLs
+
+## Admin Dashboard
+
+The `/admin` routes are protected by Supabase authentication with an email allowlist:
+
+- **Login**: Email/password via Supabase Auth
+- **Security**: Only emails in `ADMIN_EMAIL_ALLOWLIST` can access admin
+- **Session**: HTTP-only cookies prevent XSS attacks
+- **Pages**:
+  - `/admin` — Dashboard with Add/Edit product links
+  - `/admin/add-product` — Upload new product with cover + gallery images
+  - `/admin/edit-product` — Edit/delete existing products with image management
+
+All server actions validate the user is authenticated and allowlisted before processing.
 
 ## Revalidating Cache
 
-After updating products in Supabase:
+After updating products in Supabase, revalidate the cache:
 
 ```bash
-curl "https://your-domain.com/api/revalidate?secret=YOUR_SECRET"
+curl "https://your-domain.com/api/revalidate?secret=YOUR_REVALIDATE_SECRET"
 ```
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. Push to GitHub/GitLab
+2. Import project in Vercel
+3. Add environment variables in project settings
+4. Deploy with `npm run build`
+
+### Self-Hosted
+
+```bash
+npm run build
+npm start
+```
+
+Requires Node.js 18+.
 
 ## License
 
