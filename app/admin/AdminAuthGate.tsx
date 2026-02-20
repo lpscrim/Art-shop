@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
-import { createBrowserSupabase } from '@/app/_lib/supabaseBrowser';
-import type { Session } from '@supabase/supabase-js';
+import { useEffect, useMemo, useState } from "react";
+import { createBrowserSupabase } from "@/app/_lib/supabaseBrowser";
+import type { Session } from "@supabase/supabase-js";
 
 interface AdminAuthGateProps {
   children: React.ReactNode;
@@ -10,19 +10,21 @@ interface AdminAuthGateProps {
 
 async function syncAdminCookie(token: string | null) {
   if (!token) {
-    await fetch('/api/admin/session', { method: 'DELETE' });
+    await fetch("/api/admin/session", { method: "DELETE" });
     return { ok: true } as const;
   }
 
-  const res = await fetch('/api/admin/session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch("/api/admin/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ accessToken: token }),
   });
 
   if (!res.ok) {
-    const data = await res.json().catch(() => ({ error: 'Authorization failed.' }));
-    return { ok: false, error: data.error ?? 'Authorization failed.' } as const;
+    const data = await res
+      .json()
+      .catch(() => ({ error: "Authorization failed." }));
+    return { ok: false, error: data.error ?? "Authorization failed." } as const;
   }
 
   return { ok: true } as const;
@@ -32,8 +34,8 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   const supabase = useMemo(() => createBrowserSupabase(), []);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -51,15 +53,17 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
       setLoading(false);
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
-      setSession(nextSession);
-      const result = await syncAdminCookie(nextSession?.access_token ?? null);
-      if (!result.ok) {
-        setError(result.error);
-        await supabase.auth.signOut();
-        setSession(null);
-      }
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, nextSession) => {
+        setSession(nextSession);
+        const result = await syncAdminCookie(nextSession?.access_token ?? null);
+        if (!result.ok) {
+          setError(result.error);
+          await supabase.auth.signOut();
+          setSession(null);
+        }
+      },
+    );
 
     return () => {
       active = false;
@@ -89,7 +93,9 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   if (loading) {
     return (
       <div className="min-h-screen bg-background text-foreground px-6 py-16">
-        <div className="max-w-md mx-auto text-sm text-muted-foreground">Loading…</div>
+        <div className="max-w-md mx-auto text-sm text-muted-foreground">
+          Loading…
+        </div>
       </div>
     );
   }
@@ -100,7 +106,9 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
         <div className="max-w-md mx-auto space-y-6">
           <div>
             <h1 className="text-3xl tracking-tight">ADMIN LOGIN</h1>
-            <p className="text-sm text-muted-foreground">Sign in to access admin tools.</p>
+            <p className="text-sm text-muted-foreground">
+              Sign in to access admin tools.
+            </p>
           </div>
 
           {error && (
@@ -143,8 +151,8 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="flex flex-end items-center justify-between px-6 py-4 text-xs text-muted-foreground">
+    <div className="bg-background text-foreground flex py-4 pt-16 flex-col">
+      <div className="flex items-center justify-between px-6 text-xs text-muted-foreground">
         <span>Signed in as {session.user.email}</span>
         <button
           type="button"
@@ -154,7 +162,7 @@ export default function AdminAuthGate({ children }: AdminAuthGateProps) {
           Sign out
         </button>
       </div>
-      {children}
+      <div className="flex-1">{children}</div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export function Header() {
   const router = useRouter();
 
   const isWorkPage = pathname === "/work";
-
+  const isAdminPage = pathname.startsWith("/admin");
 
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function Header() {
     }
   };
 
-  const isLight = !isWorkPage && onHero;
+  const isLight = !isWorkPage && !isAdminPage && onHero;
 
   return (
     <header className={`fixed text-xl top-0 left-0 right-0 z-999 px-6`}>
