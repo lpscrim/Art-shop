@@ -4,7 +4,7 @@ export interface AdminGalleryImage {
 }
 
 export interface AdminProduct {
-  id: number;
+  id: string;
   name: string;
   description: string;
   price_hw: number;

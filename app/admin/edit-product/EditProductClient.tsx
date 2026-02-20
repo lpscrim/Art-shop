@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { AdminProduct } from './types';
 import { deleteProduct, updateProduct, type DeleteProductState, type UpdateProductState } from './actions';
 
@@ -10,17 +11,14 @@ const MAX_FILE_SIZE = 15 * 1024 * 1024;
 const MAX_SECONDARY = 4;
 
 export default function EditProductClient({ products }: { products: AdminProduct[] }) {
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => products[0]?.id ?? null
+  );
   const [fileError, setFileError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
   const [updateState, updateAction, isUpdating] = useActionState(updateProduct, initialUpdateState);
   const [deleteState, deleteAction, isDeleting] = useActionState(deleteProduct, initialDeleteState);
-
-  useEffect(() => {
-    if (selectedId === null && products.length > 0) {
-      setSelectedId(products[0].id);
-    }
-  }, [selectedId, products]);
 
   useEffect(() => {
     if (updateState.success) {
@@ -30,9 +28,22 @@ export default function EditProductClient({ products }: { products: AdminProduct
     }
   }, [updateState]);
 
+  useEffect(() => {
+    if (updateState.success || deleteState.success) {
+      router.refresh();
+    }
+  }, [updateState.success, deleteState.success, router]);
+
+  const resolvedSelectedId = useMemo(() => {
+    if (selectedId !== null && products.some((p) => p.id === selectedId)) {
+      return selectedId;
+    }
+    return products[0]?.id ?? null;
+  }, [products, selectedId]);
+
   const selected = useMemo(
-    () => products.find((p) => p.id === selectedId) ?? null,
-    [products, selectedId]
+    () => products.find((p) => p.id === resolvedSelectedId) ?? null,
+    [products, resolvedSelectedId]
   );
 
   function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -85,8 +96,8 @@ export default function EditProductClient({ products }: { products: AdminProduct
           <span className="text-sm font-medium">Select Product</span>
           <select
             className="mt-1 block w-full rounded-md border border-muted bg-background px-3 py-2 text-sm"
-            value={selectedId ?? ''}
-            onChange={(e) => setSelectedId(Number(e.target.value))}
+            value={resolvedSelectedId ?? ''}
+            onChange={(e) => setSelectedId(e.target.value)}
           >
             {products.map((product) => (
               <option key={product.id} value={product.id}>
@@ -180,10 +191,6 @@ export default function EditProductClient({ products }: { products: AdminProduct
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Cover Image</span>
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                <input type="checkbox" name="removeCover" />
-                Remove cover image
-              </label>
             </div>
             {selected.image_url ? (
               <div className="relative aspect-4/5 max-w-60 overflow-hidden rounded-md bg-muted">

@@ -45,8 +45,8 @@ export async function updateProduct(
     const imageFile = formData.get('image') as File | null;
     const secondaryFiles = formData.getAll('secondary') as File[];
 
-    const productId = productIdStr ? Number(productIdStr) : NaN;
-    if (!Number.isFinite(productId)) return { success: false, error: 'Invalid product ID.' };
+    const productId = productIdStr?.trim();
+    if (!productId) return { success: false, error: 'Invalid product ID.' };
     if (!name?.trim()) return { success: false, error: 'Name is required.' };
 
     const priceHw = Math.round(parseFloat(priceStr ?? '') * 100);
@@ -192,8 +192,8 @@ export async function deleteProduct(
 ): Promise<DeleteProductState> {
   try {
     const productIdStr = formData.get('productId') as string | null;
-    const productId = productIdStr ? Number(productIdStr) : NaN;
-    if (!Number.isFinite(productId)) return { success: false, error: 'Invalid product ID.' };
+    const productId = productIdStr?.trim();
+    if (!productId) return { success: false, error: 'Invalid product ID.' };
 
     const supabase = createServerSupabase();
     const { data: existing, error: existingError } = await supabase

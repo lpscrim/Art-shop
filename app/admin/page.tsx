@@ -1,0 +1,28 @@
+import Link from 'next/link';
+
+export default function AdminHomePage() {
+  return (
+    <div className="min-h-screen bg-background text-foreground px-6 py-16">
+      <div className="max-w-xl mx-auto space-y-6">
+        <h1 className="text-3xl tracking-tight">ADMIN</h1>
+        <p className="text-sm text-muted-foreground">
+          Choose a task to continue.
+        </p>
+        <div className="grid gap-4">
+          <Link
+            href="/admin/add-product"
+            className="block rounded-md border border-muted bg-background px-4 py-3 text-sm transition-colors hover:border-foreground"
+          >
+            Add product
+          </Link>
+          <Link
+            href="/admin/edit-product"
+            className="block rounded-md border border-muted bg-background px-4 py-3 text-sm transition-colors hover:border-foreground"
+          >
+            Edit products
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

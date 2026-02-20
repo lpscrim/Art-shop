@@ -32,7 +32,7 @@ async function getAdminProducts(): Promise<AdminProduct[]> {
         });
 
       return {
-        id: product.id,
+        id: String(product.id),
         name: product.name ?? '',
         description: product.description ?? '',
         price_hw: product.price_hw ?? 0,
