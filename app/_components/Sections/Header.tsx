@@ -166,7 +166,7 @@ export function Header() {
                 ABOUT
             </button>
             <button
-              className={`title pop-up opacity-0 text-left transition-colors cursor-crosshair ${
+              className={`title pop-up-3 opacity-0 text-left transition-colors cursor-crosshair ${
                 isLight
                   ? "text-background hover:text-foreground"
                   : "text-foreground hover:text-muted-foreground"
