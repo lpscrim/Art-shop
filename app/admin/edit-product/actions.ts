@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createServerSupabase } from '@/app/_lib/supabase';
 import { getStripe } from '@/app/_lib/stripe';
+import { requireAdminUser } from '@/app/_lib/adminAuth';
 
 export interface UpdateProductState {
   success: boolean;
@@ -33,6 +34,7 @@ export async function updateProduct(
   formData: FormData
 ): Promise<UpdateProductState> {
   try {
+    await requireAdminUser();
     const productIdStr = formData.get('productId') as string | null;
     const name = formData.get('name') as string | null;
     const description = formData.get('description') as string | null;
@@ -191,6 +193,7 @@ export async function deleteProduct(
   formData: FormData
 ): Promise<DeleteProductState> {
   try {
+    await requireAdminUser();
     const productIdStr = formData.get('productId') as string | null;
     const productId = productIdStr?.trim();
     if (!productId) return { success: false, error: 'Invalid product ID.' };

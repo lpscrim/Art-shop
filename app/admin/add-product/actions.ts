@@ -3,6 +3,7 @@
 import { createServerSupabase } from '@/app/_lib/supabase';
 import { getStripe } from '@/app/_lib/stripe';
 import { revalidatePath } from 'next/cache';
+import { requireAdminUser } from '@/app/_lib/adminAuth';
 
 export interface AddProductState {
   success: boolean;
@@ -24,6 +25,7 @@ export async function addProduct(
   formData: FormData
 ): Promise<AddProductState> {
   try {
+    await requireAdminUser();
     const name = formData.get('name') as string | null;
     const description = formData.get('description') as string | null;
     const priceStr = formData.get('price') as string | null;

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import AdminAuthGate from './AdminAuthGate';
 
 export const metadata: Metadata = {
   title: 'Admin — Add Product',
@@ -9,5 +10,5 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return <AdminAuthGate>{children}</AdminAuthGate>;
 }
