@@ -24,7 +24,7 @@ export function Header() {
 
     const observer = new IntersectionObserver(
       ([entry]) => setOnHero(entry.isIntersecting),
-      { threshold: 0.1 }
+      { threshold: 0.065 }
     );
     observer.observe(hero);
     return () => observer.disconnect();
