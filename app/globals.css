@@ -267,6 +267,9 @@ h1, h2, h3, h4, button, .title {
 .pop-up-3 {
   animation: pop-up 0.3s ease 0.1s forwards;
 }
+.pop-up-4 {
+  animation: pop-up 0.3s ease 0.15s forwards;
+}
 
 fade-in {
   animation: fade-in 1s ease forwards;

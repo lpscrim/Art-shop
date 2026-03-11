@@ -288,6 +288,8 @@ export const PhotoModal: React.FC<PhotoModalProps> = ({
                 stripePriceId={stripePriceId}
                 stockLevel={stockLevel}
                 priceHw={priceHw}
+                name={name}
+                imageUrl={images[0] || image}
               />
             </div>
             <div className="flex justify-center w-21 -mr-4 text-foreground z-100">
